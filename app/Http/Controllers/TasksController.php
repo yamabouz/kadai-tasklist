@@ -16,8 +16,16 @@ class TasksController extends Controller
     public function index()
     {
         $tasks=Task::all();
+        $data = [];
+        if (\Auth::check()) {
+            $user = \Auth::user();
+            
+            $data = [
+                'user' => $user,
+            ];
+        }
         
-        return view('tasks.index',['tasks' =>$tasks,]);
+        return view('tasks.index',['tasks' =>$tasks,],$data);
     }
 
     /**
@@ -64,11 +72,14 @@ class TasksController extends Controller
      */
     public function show($id)
     {
-        $task = Task::find($id);
+        
+        $task = \App\Task::find($id);
 
-        return view('tasks.show', [
-            'task' => $task,
-        ]);
+        if (\Auth::id() === $task->user_id) {
+            $task->show();
+        }
+
+        return redirect('/');
     }
 
     /**
@@ -79,11 +90,14 @@ class TasksController extends Controller
      */
     public function edit($id)
     {
-        $task = Task::find($id);
+        
+        $task = \App\Task::find($id);
 
-        return view('tasks.edit', [
-            'task' => $task,
-        ]);
+        if (\Auth::id() === $task->user_id) {
+            $task->edit();
+        }
+
+        return redirect('/');
     }
 
     /**
@@ -117,8 +131,11 @@ class TasksController extends Controller
      */
     public function destroy($id)
     {
-        $task = Task::find($id);
-        $task->delete();
+        $task = \App\Task::find($id);
+
+        if (\Auth::id() === $task->user_id) {
+            $task->delete();
+        }
 
         return redirect('/');
     }
